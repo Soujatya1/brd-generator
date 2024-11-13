@@ -8,7 +8,7 @@ model = ChatGroq(groq_api_key="gsk_wHkioomaAXQVpnKqdw4XWGdyb3FYfcpr67W7cAMCQRrNT
 
 # Create an LLM chain
 llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
-    template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}. Also on all the topics mentioned elaborate on those",
+    template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}. Also on all the topics mentioned elaborate on those inside the format itself",
     input_variables=['template_format', 'requirements']
 ))
 
