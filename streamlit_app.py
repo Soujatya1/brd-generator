@@ -2,7 +2,7 @@ import streamlit as st
 from langchain_groq import ChatGroq  # Import ChatGroq for interaction with LLM
 
 # Initialize ChatGroq
-model = ChatGroq(model_name="llama3-70b-8192")  # Replace with the correct model name if different
+model = ChatGroq(groq_api_key="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", model_name="Llama3-70b-8192")
 
 # Function to generate BRD using the model
 def generate_brd(requirements, template_format):
