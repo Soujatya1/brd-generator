@@ -2,6 +2,8 @@ import streamlit as st
 from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 import requests
+from typing import Optional, List
+
 
 # Custom Groq LLM class
 class GroqLlama3LLM(LLM):
