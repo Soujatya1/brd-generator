@@ -1,12 +1,10 @@
 import streamlit as st
-from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
 import requests
-from typing import Optional, List
-
+from typing import Optional
 
 # Custom Groq LLM class
-class GroqLlama3LLM(LLM):
+class GroqLlama3LLM:
     def __init__(self, api_key: str, model_name: str = "llama3-70b-8192", api_url: str = "https://api.groq.com/llm"):
         self.api_key = api_key
         self.model_name = model_name
@@ -27,10 +25,6 @@ class GroqLlama3LLM(LLM):
             return response_data["generation"]
         else:
             raise ValueError(f"Error from Groq API: {response_data}")
-
-    @property
-    def _llm_type(self) -> str:
-        return "groq_llama3"
 
 # Initialize GroqLlama3LLM with the API key
 api_key = "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"
