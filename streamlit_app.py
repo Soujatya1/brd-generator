@@ -38,7 +38,13 @@ if st.button("Generate BRD") and requirements and template_format:
         st.write("Model Output Type:", type(output))  # Check the output type
         st.write("Model Output Content:", output)  # Check the output content
 
-        # Check the actual returned object
+        # Try to inspect the response using dir() and vars()
+        if isinstance(output, object):
+            st.write("Inspecting Model Output Object:")
+            st.write("dir(output):", dir(output))  # List all attributes/methods of the object
+            st.write("vars(output):", vars(output))  # Inspect the internal variables of the object
+
+        # Handle model response based on the discovered format
         if isinstance(output, dict):
             st.write("Model Output is a Dictionary")
             st.write(output)  # Display the whole dictionary to inspect its structure
