@@ -26,7 +26,7 @@ if st.button("Generate BRD") and requirements and template_format:
     try:
         # Generate the formatted prompt
         formatted_prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-        
+
         # Debugging: Check the type and content of the formatted prompt
         st.write("Formatted Prompt Type:", type(formatted_prompt))  # Check the type
         st.write("Formatted Prompt Content:", formatted_prompt)  # Check the content
@@ -40,8 +40,14 @@ if st.button("Generate BRD") and requirements and template_format:
 
         # Handle the output type correctly
         if isinstance(output, dict):
-            st.write(output.get('generation', 'No generation field found'))
+            # If output is a dictionary, check if it has a 'generation' field
+            generated_text = output.get('generation', None)
+            if generated_text:
+                st.write(generated_text)  # Display the BRD
+            else:
+                st.write("No 'generation' field found in the output.")
         else:
+            # If output is a string, just display it
             st.write(output)
 
     except Exception as e:
