@@ -24,8 +24,8 @@ def generate_brd(requirements, template_format):
             "inputs": [prompt],
         }
         
-        # Generate response using the Groq client
-        response = groq_client.generate(request_data)
+        # Use the correct method to generate text from Groq (this could be 'query' or another method)
+        response = groq_client.query(request_data)  # Change to correct method name, e.g., .query() or .call()
         
         # Extract the generated text from the response
         result = response['data'][0]['generated_text']
