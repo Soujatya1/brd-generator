@@ -6,7 +6,6 @@ import groq
 groq_api_key = "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"  # Your Groq API key
 groq_client = groq.Client(api_key=groq_api_key)
 
-st.write(dir(groq_client))
 # Define the PromptTemplate for the BRD
 prompt_template = PromptTemplate(
     template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}",
@@ -24,14 +23,21 @@ def generate_brd(requirements, template_format):
             "model": "Llama3-70b-8192",  # Replace with the correct model name if necessary
             "inputs": [prompt],
         }
-        
-        # Use the correct method to generate text (like 'call' if 'generate' is not available)
-        response = groq_client.predict(request_data)  # Using call() instead of generate()
+
+        # Define the options argument (additional configurations needed by Groq)
+        options = {
+            "max_tokens": 1024,  # Set the desired maximum number of tokens
+            "temperature": 0.7,   # Control the randomness of the response
+            "top_p": 1.0         # Use for nucleus sampling (optional)
+        }
+
+        # Include options when making the request
+        response = groq_client.request(options=options, data=request_data)  # Pass the 'options' and 'data'
 
         # Extract the generated text from the response
         result = response['data'][0]['generated_text']
         return result
-    
+
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None
