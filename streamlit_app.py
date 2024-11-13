@@ -1,42 +1,11 @@
 import streamlit as st
-from langchain.prompts import PromptTemplate
 import requests
-from typing import Optional
 
-# Custom Groq LLM class
-class GroqLlama3LLM:
-    def __init__(self, api_key: str, model_name: str = "llama3-70b-8192", api_url: str = "https://api.groq.com/openai/v1/chat/completions"):
-        self.api_key = api_key
-        self.model_name = model_name
-        self.api_url = api_url
+# Set up your API details
+GROQ_API_KEY = "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"
+GROQ_API_URL = "https://api.groq.com/v1/models/llama3-70b-8192"  # Update with the correct endpoint if different
 
-    def _call(self, input_text: str, stop: Optional[list[str]] = None) -> str:
-        headers = {"Authorization": f"Bearer {self.api_key}"}
-        payload = {
-            "model": self.model_name,
-            "input": input_text,  # Use 'input' instead of 'prompt'
-            "stop": stop,
-        }
-
-        response = requests.post(self.api_url, json=payload, headers=headers)
-        response_data = response.json()
-
-        if response.status_code == 200 and "generation" in response_data:
-            return response_data["generation"]
-        else:
-            raise ValueError(f"Error from Groq API: {response_data}")
-
-# Initialize GroqLlama3LLM with the API key
-api_key = "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"
-model = GroqLlama3LLM(api_key=api_key)
-
-# Define the prompt template
-prompt_template = PromptTemplate(
-    template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}",
-    input_variables=['template_format', 'requirements']
-)
-
-# Streamlit UI setup
+# Streamlit UI
 st.title("BRD Generator")
 st.write("Enter the details below to generate a Business Requirements Document.")
 
@@ -48,13 +17,23 @@ template_format = st.text_area("Enter the BRD format:", height=200, placeholder=
 
 # Generate BRD button
 if st.button("Generate BRD") and requirements and template_format:
-    # Format the prompt with user input
-    formatted_prompt = prompt_template.format(template_format=template_format, requirements=requirements)
+    # Set up the prompt text
+    prompt = f"Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}"
     
-    # Call the model with the formatted prompt
+    # Make the API call to Groq
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "prompt": prompt,
+        "max_tokens": 800  # Adjust as needed for the response length
+    }
+    
     try:
-        output = model._call(formatted_prompt)
-        st.write("### Generated Business Requirements Document")
+        response = requests.post(GROQ_API_URL, headers=headers, json=data)
+        response.raise_for_status()  # Check for request errors
+        output = response.json().get("generation", {}).get("text", "Error: No response text found.")
         st.write(output)
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error calling Groq API: {e}")
