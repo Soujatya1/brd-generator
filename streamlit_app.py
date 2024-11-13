@@ -6,6 +6,7 @@ import groq
 groq_api_key = "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"  # Your Groq API key
 groq_client = groq.Client(api_key=groq_api_key)
 
+st.write(dir(groq_client))
 # Define the PromptTemplate for the BRD
 prompt_template = PromptTemplate(
     template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}",
