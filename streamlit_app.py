@@ -2,6 +2,8 @@ import streamlit as st
 from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from docx import Document
+from io import BytesIO
 
 # Initialize ChatGroq
 model = ChatGroq(groq_api_key="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", model_name="Llama3-70b-8192")
@@ -27,4 +29,24 @@ if st.button("Generate BRD") and requirements and template_format:
     # Generate the prompt
     prompt_input = {"template_format": template_format, "requirements": requirements}
     output = llm_chain.run(prompt_input)
+    
+    # Display the generated BRD
     st.write(output)
+
+    # Create a Word document with the output
+    doc = Document()
+    doc.add_heading("Business Requirements Document", level=1)
+    doc.add_paragraph(output)
+    
+    # Save the document to a BytesIO object
+    doc_buffer = BytesIO()
+    doc.save(doc_buffer)
+    doc_buffer.seek(0)
+    
+    # Provide download link for the Word document
+    st.download_button(
+        label="Download BRD as Word Document",
+        data=doc_buffer,
+        file_name="Business_Requirements_Document.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
