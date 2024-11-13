@@ -24,21 +24,26 @@ template_format = st.text_area("Enter the BRD format:", height=200, placeholder=
 # Generate BRD button
 if st.button("Generate BRD") and requirements and template_format:
     try:
-        with st.spinner('Generating BRD...'):
-            # Generate the formatted prompt
-            formatted_prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-            
-            # Debug: Print formatted prompt to check
-            st.write("Formatted prompt:", formatted_prompt)
-            
-            # Call the model with the formatted prompt
-            output = model(formatted_prompt)
-            
-            # Handle the output type
-            if isinstance(output, dict):
-                st.write(output.get('generation', 'No output generated'))
-            else:
-                st.write(output)
+        # Generate the formatted prompt
+        formatted_prompt = prompt_template.format(template_format=template_format, requirements=requirements)
+        
+        # Debugging: Check the type and content of the formatted prompt
+        st.write("Formatted Prompt Type:", type(formatted_prompt))  # Check the type
+        st.write("Formatted Prompt Content:", formatted_prompt)  # Check the content
+
+        # Call the model with the formatted prompt
+        output = model(formatted_prompt)
+        
+        # Debugging: Check the type and content of the output
+        st.write("Model Output Type:", type(output))  # Check the output type
+        st.write("Model Output Content:", output)  # Check the output content
+
+        # Handle the output type correctly
+        if isinstance(output, dict):
+            st.write(output.get('generation', 'No generation field found'))
+        else:
+            st.write(output)
+
     except Exception as e:
         st.error(f"Error generating BRD: {e}")
 else:
