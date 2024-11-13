@@ -26,7 +26,7 @@ def generate_brd(requirements, template_format):
         }
         
         # Use the correct method to generate text (like 'call' if 'generate' is not available)
-        response = groq_client.request(request_data)  # Using call() instead of generate()
+        response = groq_client.predict(request_data)  # Using call() instead of generate()
 
         # Extract the generated text from the response
         result = response['data'][0]['generated_text']
