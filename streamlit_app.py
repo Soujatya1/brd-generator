@@ -1,7 +1,7 @@
 import streamlit as st
-from langchain_groq import ChatGroq  # Import ChatGroq for interaction with LLM
+from langchain_groq import ChatGroq
 from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 import faiss
 import numpy as np
 
