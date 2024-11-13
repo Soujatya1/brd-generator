@@ -26,8 +26,8 @@ def generate_brd(requirements, template_format):
             "temperature": 0.7,           # Optional, can adjust model randomness
         }
 
-        # Call the Groq model using the correct method
-        response = groq_client.request(options=options)  # Pass options directly
+        # Call the Groq model using the correct method, including the 'cast_to' argument
+        response = groq_client.request(options=options, cast_to=dict)  # Pass 'cast_to=dict' to handle the response
 
         # Extract the generated text from the response
         result = response['data'][0]['generated_text']
