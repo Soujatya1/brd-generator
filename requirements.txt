@@ -4,4 +4,4 @@ langchain
 numpy
 langchain_community
 langchain_core
-docx
+python-docx
