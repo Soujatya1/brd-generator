@@ -5,4 +5,3 @@ numpy
 langchain_community
 langchain_core
 docx
-exceptions
