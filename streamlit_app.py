@@ -6,13 +6,16 @@ model = ChatGroq(groq_api_key="gsk_wHkioomaAXQVpnKqdw4XWGdyb3FYfcpr67W7cAMCQRrNT
 
 # Function to generate BRD using the model
 def generate_brd(requirements, template_format):
-    # Construct the prompt as a single string
+    # Construct the prompt
     prompt = f"Generate a Business Requirements Document (BRD) in the following format:\n\n{template_format}\n\nBased on these requirements:\n{requirements}\n"
     
-    # Call generate with just the prompt string
-    response = model.generate(prompt=prompt, temperature=0.7, max_tokens=1000)
+    # Pass the prompt in a list as messages
+    messages = [prompt]  # Just a list containing the prompt text
     
-    # Extract the response; structure may vary based on ChatGroq's response format
+    # Call model.generate with messages
+    response = model.generate(messages=messages, temperature=0.7, max_tokens=1000)
+    
+    # Extract the response text if 'generation' or a similar field is available
     return response.get('generation', 'No response generated')
 
 # Streamlit UI
