@@ -3,7 +3,7 @@ from langchain.prompts import PromptTemplate
 import requests
 
 # Groq API base URL
-GROQ_API_URL = "https://api.groq.com/openai/v1/models/{Llama3-70b-8192}"  # Modify based on Groq API docs
+GROQ_API_URL = "https://api.groq.com/openai/v1/models/Llama3-70b-8192"  # Modify based on Groq API docs
 
 # Initialize API key
 API_KEY = "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"
