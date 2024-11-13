@@ -10,11 +10,11 @@ class GroqLlama3LLM:
         self.model_name = model_name
         self.api_url = api_url
 
-    def _call(self, prompt: str, stop: Optional[list[str]] = None) -> str:
+    def _call(self, input_text: str, stop: Optional[list[str]] = None) -> str:
         headers = {"Authorization": f"Bearer {self.api_key}"}
         payload = {
             "model": self.model_name,
-            "prompt": prompt,
+            "input": input_text,  # Use 'input' instead of 'prompt'
             "stop": stop,
         }
 
