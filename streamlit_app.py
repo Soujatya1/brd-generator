@@ -4,6 +4,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
 from io import BytesIO
+import re  # For identifying topics and sub-topics
 
 # Initialize ChatGroq
 model = ChatGroq(groq_api_key="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", model_name="Llama3-70b-8192")
@@ -35,7 +36,22 @@ if st.button("Generate BRD") and requirements and template_format:
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
-    doc.add_paragraph(output)
+
+    # Function to add bold formatting for topics and sub-topics
+    def add_bold_paragraph(doc, text):
+        # Example regex to match headings (can be customized based on the output format)
+        # Assuming topics start with "1." or any numbered format or uppercase headings
+        paragraphs = re.split(r'(\d+\.\s*[A-Z].*?)(?=\s*\d+\.|\Z)', text, flags=re.DOTALL)  # Split by numbered headings
+        for para in paragraphs:
+            if re.match(r'^\d+\.\s*[A-Z].*', para):  # If it's a topic or sub-topic
+                # Add bolded topic/sub-topic
+                doc.add_paragraph(para, style='Heading 2')
+            else:
+                # Add normal content
+                doc.add_paragraph(para)
+    
+    # Add the BRD content with bold formatting for topics/sub-topics
+    add_bold_paragraph(doc, output)
 
     # Save the document to a BytesIO buffer
     buffer = BytesIO()
