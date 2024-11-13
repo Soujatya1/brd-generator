@@ -5,8 +5,7 @@ from typing import Optional
 
 # Custom Groq LLM class
 class GroqLlama3LLM:
-    def __init__(self, api_key: str, model_name: str = "llama3-70b-8192", api_url: str = "https://api.groq.com/openai/v1/chat/completions
-):
+    def __init__(self, api_key: str, model_name: str = "llama3-70b-8192", api_url: str = "https://api.groq.com/openai/v1/chat/completions):
         self.api_key = api_key
         self.model_name = model_name
         self.api_url = api_url
