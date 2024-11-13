@@ -1,12 +1,10 @@
 import streamlit as st
 from langchain.prompts import PromptTemplate
-import requests
+import groq
 
-# Groq API base URL
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"  # Modify based on Groq API docs
-
-# Initialize API key
-API_KEY = "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"
+# Initialize the Groq client with your API key
+groq_api_key = "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"  # Your Groq API key
+groq_client = groq.Client(api_key=groq_api_key)
 
 # Define the PromptTemplate for the BRD
 prompt_template = PromptTemplate(
@@ -14,34 +12,25 @@ prompt_template = PromptTemplate(
     input_variables=['template_format', 'requirements']
 )
 
-# Define a function to generate the BRD using the Groq API
+# Define a function to generate the BRD using the Groq model
 def generate_brd(requirements, template_format):
-    # Format the prompt
+    # Format the prompt using the PromptTemplate
     prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-    
-    # Create the payload for the request
-    data = {
-        "inputs": [prompt],
-        "temperature": 0.7,
-        "max_tokens": 500
-    }
-    
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    
+
     try:
-        # Send POST request to Groq API
-        response = requests.post(GROQ_API_URL, json=data, headers=headers)
+        # Create the request body for Groq API
+        request_data = {
+            "model": "Llama3-70b-8192",  # Replace with the correct model name if necessary
+            "inputs": [prompt],
+        }
         
-        # Check for successful response
-        if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['text']
-        else:
-            st.error(f"Error: {response.status_code} - {response.text}")
-            return None
+        # Generate response using the Groq client
+        response = groq_client.generate(request_data)
+        
+        # Extract the generated text from the response
+        result = response['data'][0]['generated_text']
+        return result
+    
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None
