@@ -1,9 +1,9 @@
 import streamlit as st
 from langchain.prompts import PromptTemplate
-from langchain_groq import ChatGroq
+import groq
 
 # Initialize the ChatGroq model
-groq_model = ChatGroq(groq_api_key="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", model_name="Llama3-70b-8192")
+groq_client = groq.Client(api_key="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")
 
 # Define the PromptTemplate for the BRD
 prompt_template = PromptTemplate(
@@ -15,12 +15,21 @@ prompt_template = PromptTemplate(
 def generate_brd(requirements, template_format):
     # Format the prompt
     prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-    
-    # Assuming ChatGroq expects the input as a dictionary with 'prompt'
+
     try:
-        # Generate response (adjust based on correct method for ChatGroq)
-        result = groq_model.generate(prompt)  # Or use the correct method based on API
-        return result  # If the response is directly the generated text
+        # Create the request body for Groq API
+        request_data = {
+            "model": "Llama3-70b-8192",  # Replace with the correct model name if necessary
+            "inputs": [prompt],
+        }
+        
+        # Generate response using the Groq client
+        response = groq_client.generate(request_data)
+        
+        # Extract the generated text from the response
+        result = response['data'][0]['generated_text']
+        return result
+    
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None
