@@ -1,2 +1,5 @@
 streamlit
 langchain_groq
+faiss
+langchain
+numpy
