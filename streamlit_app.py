@@ -18,21 +18,16 @@ def generate_brd(requirements, template_format):
     prompt = prompt_template.format(template_format=template_format, requirements=requirements)
 
     try:
-        # Create the request body for Groq API
-        request_data = {
-            "model": "Llama3-70b-8192",  # Replace with the correct model name if necessary
-            "inputs": [prompt],
-        }
-
-        # Define the options argument (additional configurations needed by Groq)
+        # Create the options argument with model and inputs directly inside it
         options = {
-            "max_tokens": 1024,  # Set the desired maximum number of tokens
-            "temperature": 0.7,   # Control the randomness of the response
-            "top_p": 1.0         # Use for nucleus sampling (optional)
+            "model": "Llama3-70b-8192",  # Use the model you need
+            "inputs": [prompt],
+            "max_tokens": 1024,           # Optional, depending on the model's settings
+            "temperature": 0.7,           # Optional, can adjust model randomness
         }
 
-        # Include options when making the request
-        response = groq_client.request(options=options, data=request_data)  # Pass the 'options' and 'data'
+        # Call the Groq model using the correct method
+        response = groq_client.request(options=options)  # Pass options directly
 
         # Extract the generated text from the response
         result = response['data'][0]['generated_text']
