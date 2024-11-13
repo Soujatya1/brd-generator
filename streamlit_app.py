@@ -38,16 +38,19 @@ if st.button("Generate BRD") and requirements and template_format:
         st.write("Model Output Type:", type(output))  # Check the output type
         st.write("Model Output Content:", output)  # Check the output content
 
-        # Handle the output type correctly
+        # Check the actual returned object
         if isinstance(output, dict):
-            # If output is a dictionary, check if it has a 'generation' field
+            st.write("Model Output is a Dictionary")
+            st.write(output)  # Display the whole dictionary to inspect its structure
+
+            # Extract and display the generation field, if available
             generated_text = output.get('generation', None)
             if generated_text:
                 st.write(generated_text)  # Display the BRD
             else:
                 st.write("No 'generation' field found in the output.")
         else:
-            # If output is a string, just display it
+            st.write("Output is not a dictionary, it is of type:", type(output))  # Check type
             st.write(output)
 
     except Exception as e:
