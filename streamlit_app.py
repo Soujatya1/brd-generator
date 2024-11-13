@@ -11,7 +11,8 @@ model = ChatGroq(groq_api_key="gsk_wHkioomaAXQVpnKqdw4XWGdyb3FYfcpr67W7cAMCQRrNT
 # Modify the prompt template to include elaboration instruction
 llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     template="Generate a detailed Business Requirements Document (BRD) in the following format: {template_format}. "
-             "For each section and sub-section, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}",
+             "For each topics and sub-topics, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}",
+             "Do not hallucinate while elaborating on the topics and sub-topics, remain within the context of the {requirements}",
     input_variables=['template_format', 'requirements']
 ))
 
