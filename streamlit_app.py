@@ -1,6 +1,5 @@
 import streamlit as st
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from langchain_groq import ChatGroq
 
 # Initialize the ChatGroq model
@@ -17,9 +16,14 @@ def generate_brd(requirements, template_format):
     # Format the prompt
     prompt = prompt_template.format(template_format=template_format, requirements=requirements)
     
-    # Assuming ChatGroq uses generate or a similar method to get the response
-    result = groq_model.generate(prompt)  # Or groq_model.complete() depending on actual API
-    return result['text']  # Assuming the result is a dictionary with a 'text' key
+    # Assuming ChatGroq expects the input as a dictionary with 'prompt'
+    try:
+        # Generate response (adjust based on correct method for ChatGroq)
+        result = groq_model.generate(prompt)  # Or use the correct method based on API
+        return result  # If the response is directly the generated text
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+        return None
 
 # Streamlit UI
 st.title("BRD Generator")
@@ -35,4 +39,5 @@ template_format = st.text_area("Enter the BRD format:", height=200, placeholder=
 if st.button("Generate BRD") and requirements and template_format:
     with st.spinner("Generating..."):
         output = generate_brd(requirements=requirements, template_format=template_format)
-        st.write(output)
+        if output:
+            st.write(output)
