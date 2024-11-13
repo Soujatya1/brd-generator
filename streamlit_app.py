@@ -10,7 +10,7 @@ def generate_brd(requirements, template_format):
     prompt = f"Generate a Business Requirements Document (BRD) in the following format:\n\n{template_format}\n\nBased on these requirements:\n{requirements}\n"
     
     # Pass the prompt in a list as messages
-    messages = [{"text": prompt}] # Just a list containing the prompt text
+    messages = [prompt] # Just a list containing the prompt text
     
     # Call model.generate with messages
     response = model.generate(messages=messages, temperature=0.7, max_tokens=1000)
