@@ -14,7 +14,7 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
              "For each topics and sub-topics, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}",
              "Do not hallucinate while elaborating on the topics and sub-topics, remain within the context of the {requirements}",
     input_variables=['template_format', 'requirements']
-)
+    ))
 
 # Streamlit UI
 st.title("BRD Generator")
