@@ -4,3 +4,4 @@ langchain
 numpy
 langchain_community
 langchain_core
+langchain.chains
