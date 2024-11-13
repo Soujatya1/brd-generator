@@ -1,6 +1,7 @@
 import streamlit as st
 from langchain_groq import ChatGroq
 from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 
 # Initialize ChatGroq
 model = ChatGroq(groq_api_key="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", model_name="Llama3-70b-8192")
