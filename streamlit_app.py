@@ -1,43 +1,46 @@
 import streamlit as st
+from langchain.llms.base import LLM
 from langchain.prompts import PromptTemplate
-import groq
+import requests
 
-# Initialize the Groq client with your API key
-groq_api_key = "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"  # Your Groq API key
-groq_client = groq.Client(api_key=groq_api_key)
+# Custom Groq LLM class
+class GroqLlama3LLM(LLM):
+    def __init__(self, api_key: str, model_name: str = "llama3-70b-8192", api_url: str = "https://api.groq.com/llm"):
+        self.api_key = api_key
+        self.model_name = model_name
+        self.api_url = api_url
 
-# Define the PromptTemplate for the BRD
+    def _call(self, prompt: str, stop: Optional[list[str]] = None) -> str:
+        headers = {"Authorization": f"Bearer {self.api_key}"}
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt,
+            "stop": stop,
+        }
+
+        response = requests.post(self.api_url, json=payload, headers=headers)
+        response_data = response.json()
+
+        if response.status_code == 200 and "generation" in response_data:
+            return response_data["generation"]
+        else:
+            raise ValueError(f"Error from Groq API: {response_data}")
+
+    @property
+    def _llm_type(self) -> str:
+        return "groq_llama3"
+
+# Initialize GroqLlama3LLM with the API key
+api_key = "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"
+model = GroqLlama3LLM(api_key=api_key)
+
+# Define the prompt template
 prompt_template = PromptTemplate(
     template="Generate a Business Requirements Document (BRD) in the following format: {template_format} based on these requirements: {requirements}",
     input_variables=['template_format', 'requirements']
 )
 
-# Define a function to generate the BRD using the Groq model
-def generate_brd(requirements, template_format):
-    # Format the prompt using the PromptTemplate
-    prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-
-    try:
-        # Create the options argument with model and inputs directly inside it
-        options = {
-            "model": "Llama3-70b-8192",  # Use the model you need
-            "inputs": [prompt],
-            "max_tokens": 1024,           # Optional, depending on the model's settings
-            "temperature": 0.7,           # Optional, can adjust model randomness
-        }
-
-        # Call the Groq model using the correct method, but without the cast_to argument
-        response = groq_client.request(options=options)  # No cast_to argument
-
-        # Extract the generated text from the response
-        result = response['data'][0]['generated_text']
-        return result
-
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
-        return None
-
-# Streamlit UI
+# Streamlit UI setup
 st.title("BRD Generator")
 st.write("Enter the details below to generate a Business Requirements Document.")
 
@@ -49,7 +52,13 @@ template_format = st.text_area("Enter the BRD format:", height=200, placeholder=
 
 # Generate BRD button
 if st.button("Generate BRD") and requirements and template_format:
-    with st.spinner("Generating..."):
-        output = generate_brd(requirements=requirements, template_format=template_format)
-        if output:
-            st.write(output)
+    # Format the prompt with user input
+    formatted_prompt = prompt_template.format(template_format=template_format, requirements=requirements)
+    
+    # Call the model with the formatted prompt
+    try:
+        output = model._call(formatted_prompt)
+        st.write("### Generated Business Requirements Document")
+        st.write(output)
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
