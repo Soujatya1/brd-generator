@@ -1,9 +1,12 @@
 import streamlit as st
 from langchain.prompts import PromptTemplate
-import groq
+import requests
 
-# Initialize the ChatGroq model
-groq_client = groq.Client(api_key="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")
+# Groq API base URL
+GROQ_API_URL = "https://api.groq.ai/v1/models/Llama3-70b-8192/completions"  # Modify based on Groq API docs
+
+# Initialize API key
+API_KEY = "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"
 
 # Define the PromptTemplate for the BRD
 prompt_template = PromptTemplate(
@@ -11,25 +14,34 @@ prompt_template = PromptTemplate(
     input_variables=['template_format', 'requirements']
 )
 
-# Define a function to generate the BRD using ChatGroq model
+# Define a function to generate the BRD using the Groq API
 def generate_brd(requirements, template_format):
     # Format the prompt
     prompt = prompt_template.format(template_format=template_format, requirements=requirements)
-
-    try:
-        # Create the request body for Groq API
-        request_data = {
-            "model": "Llama3-70b-8192",  # Replace with the correct model name if necessary
-            "inputs": [prompt],
-        }
-        
-        # Generate response using the Groq client
-        response = groq_client.generate(request_data)
-        
-        # Extract the generated text from the response
-        result = response['data'][0]['generated_text']
-        return result
     
+    # Create the payload for the request
+    data = {
+        "inputs": [prompt],
+        "temperature": 0.7,
+        "max_tokens": 500
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        # Send POST request to Groq API
+        response = requests.post(GROQ_API_URL, json=data, headers=headers)
+        
+        # Check for successful response
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['text']
+        else:
+            st.error(f"Error: {response.status_code} - {response.text}")
+            return None
     except Exception as e:
         st.error(f"Error: {str(e)}")
         return None
