@@ -60,37 +60,38 @@ else:
 
 # Generate BRD when button is clicked
 if st.button("Generate BRD") and requirements and template_format:
-    # Generate the prompt
-    prompt_input = {"template_format": template_format, "requirements": requirements}
-    output = llm_chain.run(prompt_input)
-    st.write(output)
-
-    # Split the generated output into sections based on the headers in the format
-    headers = template_format.split("\n")
-    output_sections = output.split("\n")  # Assuming output aligns with the headers
+    # Split headers from the BRD format
+    headers = [header.strip() for header in template_format.split("\n") if header.strip()]
 
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
 
-    # Iterate through headers and add them with content
-    for i, header in enumerate(headers):
-        if header.strip():  # Skip empty lines in the format
-            # Add the header in bold
-            paragraph = doc.add_paragraph()
-            bold_run = paragraph.add_run(header.strip())
-            bold_run.bold = True
+    # Match content for each header
+    for header in headers:
+        # Add header in bold
+        paragraph = doc.add_paragraph()
+        bold_run = paragraph.add_run(header)
+        bold_run.bold = True
 
-            # Add the corresponding content
-            if i < len(output_sections):  # Ensure there's corresponding content
-                doc.add_paragraph(output_sections[i].strip(), style='Normal')
+        # Match content for the header from requirements
+        matching_content = []
+        for line in requirements.split("\n"):
+            if header.lower() in line.lower():
+                matching_content.append(line)
+
+        # Add matched content or placeholder
+        if matching_content:
+            doc.add_paragraph("\n".join(matching_content), style='Normal')
+        else:
+            doc.add_paragraph("No relevant information provided.", style='Normal')
 
     # Save the Word document to a buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
 
-    # Download button for Word document
+    # Display the document in Streamlit
     st.download_button(
         label="Download BRD as Word document",
         data=buffer,
