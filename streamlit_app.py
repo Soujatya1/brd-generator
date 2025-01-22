@@ -64,20 +64,26 @@ if st.button("Generate BRD") and requirements and template_format:
     prompt_input = {"template_format": template_format, "requirements": requirements}
     output = llm_chain.run(prompt_input)
     st.write(output)
-    
+
+    # Split the generated output into sections based on the headers in the format
+    headers = template_format.split("\n")
+    output_sections = output.split("\n")  # Assuming output aligns with the headers
+
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
-    
-    # Add the template format in bold
-    doc.add_heading('Template Format:', level=2)
-    paragraph = doc.add_paragraph()
-    bold_run = paragraph.add_run(template_format)
-    bold_run.bold = True  # Make the template format text bold
 
-    # Add the generated BRD content
-    doc.add_heading('Generated BRD:', level=2)
-    doc.add_paragraph(output)
+    # Iterate through headers and add them with content
+    for i, header in enumerate(headers):
+        if header.strip():  # Skip empty lines in the format
+            # Add the header in bold
+            paragraph = doc.add_paragraph()
+            bold_run = paragraph.add_run(header.strip())
+            bold_run.bold = True
+
+            # Add the corresponding content
+            if i < len(output_sections):  # Ensure there's corresponding content
+                doc.add_paragraph(output_sections[i].strip(), style='Normal')
 
     # Save the Word document to a buffer
     buffer = BytesIO()
@@ -91,3 +97,4 @@ if st.button("Generate BRD") and requirements and template_format:
         file_name="BRD.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
