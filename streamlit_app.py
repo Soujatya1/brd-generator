@@ -15,9 +15,10 @@ model = ChatGroq(
 )
 
 llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
-    input_variables=['template_format', 'requirements'],
+    input_variables=['template_format', 'requirements', 'tables'],
     template="Generate a detailed Business Requirements Document (BRD) in the following format: {template_format}. "
-             "For each topics and sub-topics, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}, including tabular content where applicable."
+             "For each topic and sub-topic, provide thorough explanations based on these requirements: {requirements}. "
+             "Include the following tabular content wherever applicable: {tables}. Please do not hallucinate."
 ))
 
 st.title("BRD Generator")
@@ -36,7 +37,11 @@ def extract_content_from_docx(file):
         for row in table.rows:
             table_data.append([cell.text.strip() for cell in row.cells])
         tables.append(table_data)
-    return text, tables
+    # Convert tables to a string format
+    tables_as_text = ""
+    for table_data in tables:
+        tables_as_text += "\n".join(["\t".join(row) for row in table_data]) + "\n\n"
+    return text, tables_as_text
 
 # Function to extract text from .pdf files
 def extract_text_from_pdf(file):
@@ -49,13 +54,13 @@ def extract_text_from_pdf(file):
 # Process uploaded files
 if uploaded_files:
     combined_requirements = ""
-    all_tables = []
+    all_tables_as_text = ""
     for uploaded_file in uploaded_files:
         file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
         if file_extension == ".docx":
-            text, tables = extract_content_from_docx(uploaded_file)
+            text, tables_as_text = extract_content_from_docx(uploaded_file)
             combined_requirements += text + "\n"
-            all_tables.extend(tables)
+            all_tables_as_text += tables_as_text + "\n"
         elif file_extension == ".pdf":
             combined_requirements += extract_text_from_pdf(uploaded_file) + "\n"
         else:
@@ -64,6 +69,7 @@ if uploaded_files:
     requirements = combined_requirements
 else:
     requirements = ""
+    all_tables_as_text = ""
 
 # Create a hash for consistent output
 def generate_hash(template_format, requirements):
@@ -80,12 +86,12 @@ if st.button("Generate BRD") and requirements and template_format:
     if doc_hash in outputs_cache:
         st.write("Using cached BRD...")
         output = outputs_cache[doc_hash]
-    else:
-        prompt_input = {"template_format": template_format, "requirements": requirements}
-        output = llm_chain.run(prompt_input)
-        outputs_cache[doc_hash] = output
-
-    st.write(output)
+    prompt_input = {
+        "template_format": template_format,
+        "requirements": requirements,
+        "tables": all_tables_as_text,
+    }
+    output = llm_chain.run(prompt_input)
 
     # Create a Word document
     doc = Document()
