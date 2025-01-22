@@ -60,48 +60,40 @@ else:
 
 # Generate BRD when button is clicked
 if st.button("Generate BRD") and requirements and template_format:
-    # Split headers from the BRD format
-    headers = [header.strip() for header in template_format.split("\n") if header.strip()]
+    # Generate the prompt
+    prompt_input = {"template_format": template_format, "requirements": requirements}
+    output = llm_chain.run(prompt_input)
+    st.write(output)
+
+    # Split the generated output into sections based on the headers in the format
+    headers = template_format.split("\n")
+    output_sections = output.split("\n")  # Assuming output aligns with the headers
 
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
 
-    # Iterate through headers and match them with the requirements
-    for header in headers:
-        # Add header in bold
-        paragraph = doc.add_paragraph()
-        bold_run = paragraph.add_run(header)
-        bold_run.bold = True
+    # Iterate through headers and add them with content
+    for i, header in enumerate(headers):
+        if header.strip():  # Skip empty lines in the format
+            # Add the header in bold
+            paragraph = doc.add_paragraph()
+            bold_run = paragraph.add_run(header.strip())
+            bold_run.bold = True
 
-        # Check for exact matches in the requirements document
-        exact_match_content = []
-        for line in requirements.split("\n"):
-            if header.lower() in line.lower():
-                exact_match_content.append(line)
-
-        # If there's an exact match, use it
-        if exact_match_content:
-            doc.add_paragraph("\n".join(exact_match_content), style='Normal')
-        else:
-            # Generate content for other headers using LLM
-            prompt_input = {
-                "template_format": header,
-                "requirements": requirements,
-            }
-            generated_content = llm_chain.run(prompt_input)
-            doc.add_paragraph(generated_content.strip(), style='Normal')
+            # Add the corresponding content
+            if i < len(output_sections):  # Ensure there's corresponding content
+                doc.add_paragraph(output_sections[i].strip(), style='Normal')
 
     # Save the Word document to a buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
 
-    # Streamlit download button
+    # Download button for Word document
     st.download_button(
         label="Download BRD as Word document",
         data=buffer,
         file_name="BRD.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-
