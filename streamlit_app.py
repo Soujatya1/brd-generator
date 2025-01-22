@@ -68,19 +68,8 @@ if st.button("Generate BRD") and requirements and template_format:
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
+    doc.add_paragraph(output)
 
-    # Add parameters as headers
-    doc.add_heading('Requirements:', level=2)
-    doc.add_paragraph(requirements, style='Normal')
-
-    doc.add_heading('Template Format:', level=2)
-    doc.add_paragraph(template_format, style='Normal')
-
-    # Add generated content
-    doc.add_heading('Generated BRD:', level=2)
-    doc.add_paragraph(output, style='Normal')
-
-    # Save the Word document to a buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
