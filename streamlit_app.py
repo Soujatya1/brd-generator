@@ -71,27 +71,28 @@ else:
     requirements = ""
     all_tables_as_text = ""
 
-# Create a hash for consistent output
 def generate_hash(template_format, requirements):
     combined_string = template_format + requirements
     return hashlib.md5(combined_string.encode()).hexdigest()
 
-# Store outputs for consistent results
-outputs_cache = {}
+if "outputs_cache" not in st.session_state:
+    st.session_state.outputs_cache = {}
 
 # Generate BRD when button is clicked
 if st.button("Generate BRD") and requirements and template_format:
     doc_hash = generate_hash(template_format, requirements)
     
-    if doc_hash in outputs_cache:
+    if doc_hash in st.session_state.outputs_cache:
         st.write("Using cached BRD...")
-        output = outputs_cache[doc_hash]
-    prompt_input = {
-        "template_format": template_format,
-        "requirements": requirements,
-        "tables": all_tables_as_text,
-    }
-    output = llm_chain.run(prompt_input)
+        output = st.session_state.outputs_cache[doc_hash]
+    else:
+        prompt_input = {
+            "template_format": template_format,
+            "requirements": requirements,
+            "tables": all_tables_as_text,
+        }
+        output = llm_chain.run(prompt_input)
+        st.session_state.outputs_cache[doc_hash] = output
     st.write(output)
 
     # Create a Word document
