@@ -4,8 +4,8 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from docx import Document
 from io import BytesIO
-import docx  # For processing .docx files
-import PyPDF2  # For processing .pdf files
+import hashlib
+import PyPDF2
 import os
 
 # Initialize the model
@@ -17,22 +17,26 @@ model = ChatGroq(
 llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     input_variables=['template_format', 'requirements'],
     template="Generate a detailed Business Requirements Document (BRD) in the following format: {template_format}. "
-             "For each topics and sub-topics, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}, please do not hallucinate"
+             "For each topics and sub-topics, provide thorough explanations and elaborate on each topic based on these requirements: {requirements}, including tabular content where applicable."
 ))
 
 st.title("BRD Generator")
 st.write("Upload requirement documents and define the BRD structure below to generate a detailed Business Requirements Document.")
 
-# File uploader for multiple files
 uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
-
-# Text area for BRD format
 template_format = st.text_area("Enter the BRD format:", height=200, placeholder="Define the structure of the BRD here...")
 
-# Function to extract text from .docx files
-def extract_text_from_docx(file):
+# Function to extract text and tables from .docx files
+def extract_content_from_docx(file):
     doc = Document(file)
-    return "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+    tables = []
+    for table in doc.tables:
+        table_data = []
+        for row in table.rows:
+            table_data.append([cell.text.strip() for cell in row.cells])
+        tables.append(table_data)
+    return text, tables
 
 # Function to extract text from .pdf files
 def extract_text_from_pdf(file):
@@ -45,10 +49,13 @@ def extract_text_from_pdf(file):
 # Process uploaded files
 if uploaded_files:
     combined_requirements = ""
+    all_tables = []
     for uploaded_file in uploaded_files:
         file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
         if file_extension == ".docx":
-            combined_requirements += extract_text_from_docx(uploaded_file) + "\n"
+            text, tables = extract_content_from_docx(uploaded_file)
+            combined_requirements += text + "\n"
+            all_tables.extend(tables)
         elif file_extension == ".pdf":
             combined_requirements += extract_text_from_pdf(uploaded_file) + "\n"
         else:
@@ -58,39 +65,48 @@ if uploaded_files:
 else:
     requirements = ""
 
+# Create a hash for consistent output
+def generate_hash(template_format, requirements):
+    combined_string = template_format + requirements
+    return hashlib.md5(combined_string.encode()).hexdigest()
+
+# Store outputs for consistent results
+outputs_cache = {}
+
 # Generate BRD when button is clicked
 if st.button("Generate BRD") and requirements and template_format:
-    # Generate the prompt
-    prompt_input = {"template_format": template_format, "requirements": requirements}
-    output = llm_chain.run(prompt_input)
-    st.write(output)
+    doc_hash = generate_hash(template_format, requirements)
+    
+    if doc_hash in outputs_cache:
+        st.write("Using cached BRD...")
+        output = outputs_cache[doc_hash]
+    else:
+        prompt_input = {"template_format": template_format, "requirements": requirements}
+        output = llm_chain.run(prompt_input)
+        outputs_cache[doc_hash] = output
 
-    # Split the generated output into sections based on the headers in the format
-    headers = template_format.split("\n")
-    output_sections = output.split("\n")  # Assuming output aligns with the headers
+    st.write(output)
 
     # Create a Word document
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
+    doc.add_paragraph(output, style='Normal')
 
-    # Iterate through headers and add them with content
-    for i, header in enumerate(headers):
-        if header.strip():  # Skip empty lines in the format
-            # Add the header in bold
-            paragraph = doc.add_paragraph()
-            bold_run = paragraph.add_run(header.strip())
-            bold_run.bold = True
-
-            # Add the corresponding content
-            if i < len(output_sections):  # Ensure there's corresponding content
-                doc.add_paragraph(output_sections[i].strip(), style='Normal')
+    # Append tabular content, if any
+    if all_tables:
+        doc.add_heading('Tabular Data', level=2)
+        for table_data in all_tables:
+            table = doc.add_table(rows=0, cols=len(table_data[0]))
+            for row_data in table_data:
+                row_cells = table.add_row().cells
+                for i, cell_data in enumerate(row_data):
+                    row_cells[i].text = cell_data
 
     # Save the Word document to a buffer
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
 
-    # Download button for Word document
     st.download_button(
         label="Download BRD as Word document",
         data=buffer,
