@@ -5,3 +5,4 @@ numpy
 langchain_community
 langchain_core
 python-docx
+PyPDF2
