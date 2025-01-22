@@ -99,14 +99,7 @@ if st.button("Generate BRD") and requirements and template_format:
     doc.add_paragraph(output, style='Normal')
 
     # Append tabular content, if any
-    if all_tables:
-        doc.add_heading('Tabular Data', level=2)
-        for table_data in all_tables:
-            table = doc.add_table(rows=0, cols=len(table_data[0]))
-            for row_data in table_data:
-                row_cells = table.add_row().cells
-                for i, cell_data in enumerate(row_data):
-                    row_cells[i].text = cell_data
+    
 
     # Save the Word document to a buffer
     buffer = BytesIO()
