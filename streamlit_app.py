@@ -92,6 +92,7 @@ if st.button("Generate BRD") and requirements and template_format:
         "tables": all_tables_as_text,
     }
     output = llm_chain.run(prompt_input)
+    st.write(output)
 
     # Create a Word document
     doc = Document()
