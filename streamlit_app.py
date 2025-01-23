@@ -83,7 +83,7 @@ if st.button("Generate BRD") and requirements and template_format:
     doc_hash = generate_hash(template_format, requirements)
     
     if doc_hash in st.session_state.outputs_cache:
-        st.write("Using cached BRD...")
+        #st.write("Using cached BRD...")
         output = st.session_state.outputs_cache[doc_hash]
     else:
         prompt_input = {
