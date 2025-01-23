@@ -18,8 +18,7 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     input_variables=['template_format', 'requirements', 'tables'],
     template="Generate a detailed Business Requirements Document (BRD) in the following format: {template_format}. "
              "For each topic and sub-topic, provide thorough explanations based on these requirements: {requirements}. "
-             "Include the following tabular content wherever applicable: {tables}. Please do not hallucinate."
-            "Whatever information is available in the {requirements} as per {template_format}, display those under each heading"
+             "Include the following tabular content wherever applicable: {tables}. Whatever information is available in the {requirements} as per {template_format}, display those under each heading"
 ))
 
 st.title("BRD Generator")
