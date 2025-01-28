@@ -183,8 +183,14 @@ if sample_file:
     if requirements and template_format and sample_text:
         # Calculate match scores
         content_similarity = calculate_text_similarity(requirements, sample_text)
+        content_similarity_1 = calculate_text_similarity(output_text, sample_text)
         format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
-        
+
+        if content_similarity_1 != 0:  # Ensure we don't divide by zero
+            similarity_ratio = content_similarity / content_similarity_1
+            print(f"Similarity Ratio: {similarity_ratio}")
+        else:
+            print("Error: content_similarity_1 is 0, division by zero is not possible.")
         # Final weighted score
         content_weight = 0.7
         format_weight = 0.3
