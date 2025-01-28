@@ -188,7 +188,7 @@ if sample_file:
         st.subheader("Match Score Results")
         if content_similarity_1 != 0:
             similarity_ratio = (content_similarity_1 / content_similarity)*100
-            st.write(f"Similarity Score: {similarity_ratio:.2f}")
+            st.write(f"Similarity Score: {similarity_ratio:.2f}%")
         else:
             print("Error: content_similarity_1 is 0, division by zero is not possible.")
         # Final weighted score
