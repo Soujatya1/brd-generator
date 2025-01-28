@@ -7,6 +7,7 @@ from io import BytesIO
 import hashlib
 import PyPDF2
 import os
+import pdfplumber
 
 # Initialize the model
 model = ChatGroq(
