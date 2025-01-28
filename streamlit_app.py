@@ -15,29 +15,40 @@ model = ChatGroq(
     model_name="Llama3-70b-8192"
 )
 
-llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
-    input_variables=['template_format', 'requirements', 'tables'],
-    template="""Create a Business Requirements Document (BRD) based on the following details:
+llm_chain = LLMChain(
+    llm=model, 
+    prompt=PromptTemplate(
+        input_variables=['template_format', 'requirements', 'tables'],
+        template="""
+        Create a Business Requirements Document (BRD) based on the following details:
 
-    Document Structure:
-    {template_format}
+        Document Structure:
+        {template_format}
 
-    Requirements:
-    Extract and organize the content from the provided documents and map each piece of information to the corresponding sections in the BRD. Be specific and avoid extraneous information.
+        Requirements:
+        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
 
-    Tables:
-    If applicable, include the following tabular information extracted from the documents. Ensure correct formatting and alignment:
-    {tables}
+        Tables:
+        If applicable, include the following tabular information extracted from the documents:
+        {tables}
 
-    Formatting:
-    - Use clear headings, subheadings, and numbered bullet points for organization.
-    - Differentiate between functional and non-functional requirements clearly.
-    - Provide tables in a neat and structured format.
-    Also, if necssary insert a fields from the 
-    Output:
-    The result must strictly follow the BRD format specified above, and be concise yet comprehensive. Avoid redundancy and unnecessary speculation.
-    """
-))
+        Formatting:
+        1. Use headings and subheadings for clear organization.
+        2. Include bullet points or numbered lists where necessary for better readability.
+        3. Clearly differentiate between functional and non-functional requirements.
+        4. Provide tables in a well-structured format, ensuring alignment and readability.
+
+        Key Points:
+        1. Use the given format `{template_format}` strictly as the base structure for the BRD.
+        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
+        3. Avoid including irrelevant or speculative information.
+        4. Summarize lengthy content while preserving its meaning.
+
+        Output:
+        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+        """
+    )
+)
 
 # Function to extract text and tables from .docx files
 def extract_content_from_docx(file):
@@ -74,24 +85,30 @@ template_format = st.text_area("Enter the BRD format:", height=200, placeholder=
 
 # Processing uploaded files
 if uploaded_files:
-    combined_requirements = ""
-    all_tables_as_text = ""
-    for uploaded_file in uploaded_files:
-        file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
-        if file_extension == ".docx":
-            text, tables_as_text = extract_content_from_docx(uploaded_file)
-            combined_requirements += text + "\n"
-            all_tables_as_text += tables_as_text + "\n"
-        elif file_extension == ".pdf":
-            text, tables_as_text = extract_text_from_pdf(uploaded_file)
-            combined_requirements += text + "\n"
-            all_tables_as_text += tables_as_text + "\n"
-        else:
-            st.warning(f"Unsupported file format: {uploaded_file.name}")
-    
-    requirements = combined_requirements
+    if "extracted_data" not in st.session_state:
+        combined_requirements = ""
+        all_tables_as_text = ""
+        for uploaded_file in uploaded_files:
+            file_extension = os.path.splitext(uploaded_file.name)[-1].lower()
+            if file_extension == ".docx":
+                text, tables_as_text = extract_content_from_docx(uploaded_file)
+                combined_requirements += text + "\n"
+                all_tables_as_text += tables_as_text + "\n"
+            elif file_extension == ".pdf":
+                combined_requirements += extract_text_from_pdf(uploaded_file) + "\n"
+            else:
+                st.warning(f"Unsupported file format: {uploaded_file.name}")
+        
+        st.session_state.extracted_data = {
+            'requirements': combined_requirements,
+            'tables': all_tables_as_text
+        }
+    else:
+        # Use cached data
+        combined_requirements = st.session_state.extracted_data['requirements']
+        all_tables_as_text = st.session_state.extracted_data['tables']
 else:
-    requirements = ""
+    combined_requirements = ""
     all_tables_as_text = ""
 
 # Hash function for caching
@@ -103,19 +120,21 @@ if "outputs_cache" not in st.session_state:
     st.session_state.outputs_cache = {}
 
 # Generate BRD when button is clicked
-if st.button("Generate BRD") and requirements and template_format:
-    doc_hash = generate_hash(template_format, requirements)
+if st.button("Generate BRD") and combined_requirements and template_format:
+    prompt_input = {
+        "template_format": template_format,
+        "requirements": combined_requirements,
+        "tables": all_tables_as_text,
+    }
+    
+    doc_hash = generate_hash(template_format, combined_requirements)
     
     if doc_hash in st.session_state.outputs_cache:
         output = st.session_state.outputs_cache[doc_hash]
     else:
-        prompt_input = {
-            "template_format": template_format,
-            "requirements": requirements,
-            "tables": all_tables_as_text,
-        }
         output = llm_chain.run(prompt_input)
         st.session_state.outputs_cache[doc_hash] = output
+    
     st.write(output)
 
     # Create a Word document from the BRD
