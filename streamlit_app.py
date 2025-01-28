@@ -201,7 +201,7 @@ if sample_file:
     # Ensure there's content to compare
     if requirements and template_format and sample_text:
         # Calculate match scores
-        content_similarity = calculate_text_similarity(requirements, sample_text)
+        content_similarity = calculate_text_similarity(st.session_state.extracted_data['requirements'], sample_text)
         content_similarity_1 = calculate_text_similarity(output_text, sample_text)
         format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
         st.subheader("Match Score Results")
