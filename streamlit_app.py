@@ -14,36 +14,45 @@ model = ChatGroq(
     model_name="Llama3-70b-8192"
 )
 
-llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
-    input_variables=['template_format', 'requirements', 'tables'],
-    template= """ Create a Business Requirements Document (BRD) based on the following details:
-    
-    Document Structure:
-    {template_format}
+model = ChatGroq(
+    groq_api_key="your_api_key", 
+    model_name="Llama3-70b-8192"
+)
 
-    Requirements:
-    Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
-
-    Tables:
-    If applicable, include the following tabular information extracted from the documents:
-    {tables}
-
-    Formatting:
-    1. Use headings and subheadings for clear organization.
-    2. Include bullet points or numbered lists where necessary for better readability.
-    3. Clearly differentiate between functional and non-functional requirements.
-    4. Provide tables in a well-structured format, ensuring alignment and readability.
-
-    Key Points:
-    1. Use the given format `{template_format}` strictly as the base structure for the BRD.
-    2. Ensure all relevant information from the requirements is displayed under the corresponding section.
-    3. Avoid including irrelevant or speculative information.
-    4. Summarize lengthy content while preserving its meaning.
-
-    Output:
-    The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-    """
-))
+llm_chain = LLMChain(
+    llm=model, 
+    prompt=PromptTemplate(
+        input_variables=['template_format', 'requirements', 'tables'],
+        template=""" 
+        Create a Business Requirements Document (BRD) based on the following details:
+        
+        Document Structure:
+        {template_format}
+        
+        Requirements:
+        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
+        
+        Tables:
+        If applicable, include the following tabular information extracted from the documents:
+        {tables}
+        
+        Formatting:
+        1. Use headings and subheadings for clear organization.
+        2. Include bullet points or numbered lists where necessary for better readability.
+        3. Clearly differentiate between functional and non-functional requirements.
+        4. Ensure tables are well-structured and aligned.
+        
+        Key Points:
+        1. Use the given format `{template_format}` strictly as the base structure for the BRD.
+        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
+        3. Avoid including irrelevant or speculative information.
+        4. Summarize lengthy content while preserving its meaning.
+        
+        Output:
+        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+        """
+    )
+)
 
 st.title("BRD Generator")
 st.write("Upload requirement documents and define the BRD structure below to generate a detailed Business Requirements Document.")
@@ -107,7 +116,6 @@ if st.button("Generate BRD") and requirements and template_format:
     doc_hash = generate_hash(template_format, requirements)
     
     if doc_hash in st.session_state.outputs_cache:
-        #st.write("Using cached BRD...")
         output = st.session_state.outputs_cache[doc_hash]
     else:
         prompt_input = {
@@ -125,7 +133,9 @@ if st.button("Generate BRD") and requirements and template_format:
     doc.add_paragraph(output, style='Normal')
 
     # Append tabular content, if any
-    
+    if all_tables_as_text.strip():
+        doc.add_heading('Tables', level=2)
+        doc.add_paragraph(all_tables_as_text, style='Normal')
 
     # Save the Word document to a buffer
     buffer = BytesIO()
