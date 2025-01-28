@@ -114,7 +114,7 @@ if st.button("Generate BRD") and requirements and template_format:
         file_name="BRD.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
-output = llm_chain.run(prompt_input)
+output = st.session_state.outputs_cache
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
