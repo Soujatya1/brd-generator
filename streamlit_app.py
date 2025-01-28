@@ -14,46 +14,29 @@ model = ChatGroq(
     model_name="Llama3-70b-8192"
 )
 
-llm_chain = LLMChain(
-    llm=model, 
-    prompt=PromptTemplate(
-        input_variables=['template_format', 'requirements', 'tables'],
-        template=""" 
-        Create a Business Requirements Document (BRD) based on the following details:
-        
-        Document Structure:
-        {template_format}
-        
-        Requirements:
-        Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
-        
-        Tables:
-        If applicable, include the following tabular information extracted from the documents:
-        {tables}
-        
-        Formatting:
-        1. Use headings and subheadings for clear organization.
-        2. Include bullet points or numbered lists where necessary for better readability.
-        3. Clearly differentiate between functional and non-functional requirements.
-        4. Ensure tables are well-structured and aligned.
-        
-        Key Points:
-        1. Use the given format `{template_format}` strictly as the base structure for the BRD.
-        2. Ensure all relevant information from the requirements is displayed under the corresponding section.
-        3. Avoid including irrelevant or speculative information.
-        4. Summarize lengthy content while preserving its meaning.
-        
-        Output:
-        The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-        """
-    )
-)
+llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
+    input_variables=['template_format', 'requirements', 'tables'],
+    template="""Create a Business Requirements Document (BRD) based on the following details:
 
-st.title("BRD Generator")
-st.write("Upload requirement documents and define the BRD structure below to generate a detailed Business Requirements Document.")
+    Document Structure:
+    {template_format}
 
-uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
-template_format = st.text_area("Enter the BRD format:", height=200, placeholder="Define the structure of the BRD here...")
+    Requirements:
+    Extract and organize the content from the provided documents and map each piece of information to the corresponding sections in the BRD. Be specific and avoid extraneous information.
+
+    Tables:
+    If applicable, include the following tabular information extracted from the documents. Ensure correct formatting and alignment:
+    {tables}
+
+    Formatting:
+    - Use clear headings, subheadings, and numbered bullet points for organization.
+    - Differentiate between functional and non-functional requirements clearly.
+    - Provide tables in a neat and structured format.
+
+    Output:
+    The result must strictly follow the BRD format specified above, and be concise yet comprehensive. Avoid redundancy and unnecessary speculation.
+    """
+))
 
 # Function to extract text and tables from .docx files
 def extract_content_from_docx(file):
@@ -65,21 +48,30 @@ def extract_content_from_docx(file):
         for row in table.rows:
             table_data.append([cell.text.strip() for cell in row.cells])
         tables.append(table_data)
-    # Convert tables to a string format
-    tables_as_text = ""
-    for table_data in tables:
-        tables_as_text += "\n".join(["\t".join(row) for row in table_data]) + "\n\n"
+    # Convert tables to a clean text format (tabular format for LLM processing)
+    tables_as_text = "\n\n".join(["\n".join(["\t".join(row) for row in table]) for table in tables])
     return text, tables_as_text
 
-# Function to extract text from .pdf files
+# Function to extract text and tables from .pdf files
 def extract_text_from_pdf(file):
-    pdf_reader = PyPDF2.PdfReader(file)
     text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-    return text
+    tables = ""
+    with pdfplumber.open(file) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text()
+            # Try extracting tables as well
+            for table in page.extract_tables():
+                tables += "\n" + "\n".join(["\t".join(row) for row in table])
+    return text, tables
 
-# Process uploaded files
+# Streamlit UI setup
+st.title("BRD Generator")
+st.write("Upload requirement documents and define the BRD structure below to generate a detailed Business Requirements Document.")
+
+uploaded_files = st.file_uploader("Upload requirement documents (PDF/DOCX):", accept_multiple_files=True)
+template_format = st.text_area("Enter the BRD format:", height=200, placeholder="Define the structure of the BRD here...")
+
+# Processing uploaded files
 if uploaded_files:
     combined_requirements = ""
     all_tables_as_text = ""
@@ -90,7 +82,9 @@ if uploaded_files:
             combined_requirements += text + "\n"
             all_tables_as_text += tables_as_text + "\n"
         elif file_extension == ".pdf":
-            combined_requirements += extract_text_from_pdf(uploaded_file) + "\n"
+            text, tables_as_text = extract_text_from_pdf(uploaded_file)
+            combined_requirements += text + "\n"
+            all_tables_as_text += tables_as_text + "\n"
         else:
             st.warning(f"Unsupported file format: {uploaded_file.name}")
     
@@ -99,6 +93,7 @@ else:
     requirements = ""
     all_tables_as_text = ""
 
+# Hash function for caching
 def generate_hash(template_format, requirements):
     combined_string = template_format + requirements
     return hashlib.md5(combined_string.encode()).hexdigest()
@@ -122,14 +117,14 @@ if st.button("Generate BRD") and requirements and template_format:
         st.session_state.outputs_cache[doc_hash] = output
     st.write(output)
 
-    # Create a Word document
+    # Create a Word document from the BRD
     doc = Document()
     doc.add_heading('Business Requirements Document', level=1)
     doc.add_paragraph(output, style='Normal')
 
-    # Append tabular content, if any
-    if all_tables_as_text.strip():
-        doc.add_heading('Tables', level=2)
+    # Add the tables to the Word document
+    if all_tables_as_text:
+        doc.add_heading("Tables", level=2)
         doc.add_paragraph(all_tables_as_text, style='Normal')
 
     # Save the Word document to a buffer
@@ -137,12 +132,14 @@ if st.button("Generate BRD") and requirements and template_format:
     doc.save(buffer)
     buffer.seek(0)
 
+    # Provide a download link for the BRD document
     st.download_button(
         label="Download BRD as Word document",
         data=buffer,
         file_name="BRD.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
 output = st.session_state.outputs_cache
 
 if isinstance(output, dict) and 'text' in output:
