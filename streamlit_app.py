@@ -185,7 +185,7 @@ if sample_file:
         content_similarity = calculate_text_similarity(requirements, sample_text)
         content_similarity_1 = calculate_text_similarity(output_text, sample_text)
         format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
-
+        st.subheader("Match Score Results")
         if content_similarity_1 != 0:
             similarity_ratio = content_similarity_1 / content_similarity
             st.write(f"Similarity Ratio: {similarity_ratio:.2f}")
@@ -197,8 +197,8 @@ if sample_file:
         final_score = (content_similarity * content_weight) + (format_similarity * format_weight)
 
         # Display results
-        st.subheader("Match Score Results")
-        st.write(f"Content Match: {content_similarity:.2f}%")
+        #st.subheader("Match Score Results")
+        #st.write(f"Content Match: {content_similarity:.2f}%")
         #st.write(f"Format Match: {format_similarity:.2f}%")
         #st.write(f"Overall Match Score: {final_score:.2f}%")
     else:
