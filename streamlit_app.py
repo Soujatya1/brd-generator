@@ -114,3 +114,54 @@ if st.button("Generate BRD") and requirements and template_format:
         file_name="BRD.docx",
         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     )
+
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import difflib
+
+# Function to calculate text similarity using Cosine Similarity
+def calculate_text_similarity(text1, text2):
+    vectorizer = TfidfVectorizer().fit_transform([text1, text2])
+    vectors = vectorizer.toarray()
+    cosine_sim = cosine_similarity(vectors)
+    return cosine_sim[0][1] * 100  # Return as a percentage
+
+# Function to calculate structural similarity
+def calculate_structural_similarity(tables1, tables2):
+    sm = difflib.SequenceMatcher(None, tables1, tables2)
+    return sm.ratio() * 100  # Return as a percentage
+
+# New section: Upload a sample document for comparison
+st.write("Optional: Upload a sample BRD for comparison.")
+sample_file = st.file_uploader("Upload a sample BRD (PDF/DOCX):", type=["pdf", "docx"])
+
+if sample_file:
+    file_extension = os.path.splitext(sample_file.name)[-1].lower()
+    if file_extension == ".docx":
+        sample_text, sample_tables = extract_content_from_docx(sample_file)
+    elif file_extension == ".pdf":
+        sample_text = extract_text_from_pdf(sample_file)
+        sample_tables = ""  # No table support in the current PDF extraction function
+    else:
+        st.warning(f"Unsupported file format: {sample_file.name}")
+        sample_text, sample_tables = "", ""
+
+    # Ensure there's content to compare
+    if requirements and template_format and sample_text:
+        # Calculate match scores
+        content_similarity = calculate_text_similarity(requirements, sample_text)
+        format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
+        
+        # Final weighted score
+        content_weight = 0.7
+        format_weight = 0.3
+        final_score = (content_similarity * content_weight) + (format_similarity * format_weight)
+
+        # Display results
+        st.subheader("Match Score Results")
+        st.write(f"Content Match: {content_similarity:.2f}%")
+        st.write(f"Format Match: {format_similarity:.2f}%")
+        st.write(f"Overall Match Score: {final_score:.2f}%")
+    else:
+        st.warning("Please generate a BRD first or ensure the sample document has valid content.")
