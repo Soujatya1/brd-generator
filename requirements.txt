@@ -6,4 +6,4 @@ langchain_community
 langchain_core
 python-docx
 PyPDF2
-sklearn
+scikit-learn
