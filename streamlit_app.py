@@ -116,6 +116,11 @@ if st.button("Generate BRD") and requirements and template_format:
     )
 output = st.session_state.outputs_cache
 
+if isinstance(output, dict) and 'text' in output:
+    output_text = output['text']
+else:
+    output_text = output
+    
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import difflib
