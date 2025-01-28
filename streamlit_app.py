@@ -19,7 +19,7 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     template="Generate a detailed BRD in the following format: {template_format}. "
              "Whatever information is available in the {requirements} as per {template_format}, display those under each heading"
              "Include the following tabular content wherever applicable: {tables}."
-             "As per the data extracted, please display all the available information in the generated output."
+             "As per the data extracted, please display all the available information section-wise as mentioned in the format in the generated output."
 ))
 
 st.title("BRD Generator")
