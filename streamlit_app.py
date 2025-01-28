@@ -192,8 +192,8 @@ if sample_file:
 
         # Display results
         st.subheader("Match Score Results")
-        #st.write(f"Content Match: {content_similarity:.2f}%")
-        st.write(f"Format Match: {format_similarity:.2f}%")
-        st.write(f"Overall Match Score: {final_score:.2f}%")
+        st.write(f"Content Match: {content_similarity:.2f}%")
+        #st.write(f"Format Match: {format_similarity:.2f}%")
+        #st.write(f"Overall Match Score: {final_score:.2f}%")
     else:
         st.warning("Please generate a BRD first or ensure the sample document has valid content.")
