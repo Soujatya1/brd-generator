@@ -18,31 +18,31 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     input_variables=['template_format', 'requirements', 'tables'],
     template="Create a Business Requirements Document (BRD) based on the following details:
     
-Document Structure:
-{template_format}
+    Document Structure:
+    {template_format}
 
-Requirements:
-Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
+    Requirements:
+    Analyze the content provided in the requirement documents and map the relevant information to each section defined in the BRD structure. Be concise and specific.
 
-Tables:
-If applicable, include the following tabular information extracted from the documents:
-{tables}
+    Tables:
+    If applicable, include the following tabular information extracted from the documents:
+    {tables}
 
-Formatting:
-1. Use headings and subheadings for clear organization.
-2. Include bullet points or numbered lists where necessary for better readability.
-3. Clearly differentiate between functional and non-functional requirements.
-4. Provide tables in a well-structured format, ensuring alignment and readability.
+    Formatting:
+    1. Use headings and subheadings for clear organization.
+    2. Include bullet points or numbered lists where necessary for better readability.
+    3. Clearly differentiate between functional and non-functional requirements.
+    4. Provide tables in a well-structured format, ensuring alignment and readability.
 
-Key Points:
-1. Use the given format `{template_format}` strictly as the base structure for the BRD.
-2. Ensure all relevant information from the requirements is displayed under the corresponding section.
-3. Avoid including irrelevant or speculative information.
-4. Summarize lengthy content while preserving its meaning.
+    Key Points:
+    1. Use the given format `{template_format}` strictly as the base structure for the BRD.
+    2. Ensure all relevant information from the requirements is displayed under the corresponding section.
+    3. Avoid including irrelevant or speculative information.
+    4. Summarize lengthy content while preserving its meaning.
 
-Output:
-The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-"
+    Output:
+    The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
+    "
 ))
 
 st.title("BRD Generator")
