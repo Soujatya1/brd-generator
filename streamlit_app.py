@@ -14,11 +14,6 @@ model = ChatGroq(
     model_name="Llama3-70b-8192"
 )
 
-model = ChatGroq(
-    groq_api_key="your_api_key", 
-    model_name="Llama3-70b-8192"
-)
-
 llm_chain = LLMChain(
     llm=model, 
     prompt=PromptTemplate(
