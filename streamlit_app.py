@@ -186,9 +186,9 @@ if sample_file:
         content_similarity_1 = calculate_text_similarity(output_text, sample_text)
         format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
 
-        if content_similarity_1 != 0:  # Ensure we don't divide by zero
+        if content_similarity_1 != 0:
             similarity_ratio = content_similarity / content_similarity_1
-            print(f"Similarity Ratio: {similarity_ratio:.2f}")
+            st.write(f"Similarity Ratio: {similarity_ratio:.2f}")
         else:
             print("Error: content_similarity_1 is 0, division by zero is not possible.")
         # Final weighted score
