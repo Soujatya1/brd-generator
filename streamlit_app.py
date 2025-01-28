@@ -16,7 +16,7 @@ model = ChatGroq(
 
 llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     input_variables=['template_format', 'requirements', 'tables'],
-    template= " Create a Business Requirements Document (BRD) based on the following details:
+    template= """ Create a Business Requirements Document (BRD) based on the following details:
     
     Document Structure:
     {template_format}
@@ -42,9 +42,7 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
 
     Output:
     The output must be formatted cleanly as a Business Requirements Document, following professional standards. Avoid verbose language and stick to the structure defined above.
-    "
-    
-    
+    """
 ))
 
 st.title("BRD Generator")
