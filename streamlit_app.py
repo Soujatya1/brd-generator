@@ -33,7 +33,7 @@ llm_chain = LLMChain(llm=model, prompt=PromptTemplate(
     - Use clear headings, subheadings, and numbered bullet points for organization.
     - Differentiate between functional and non-functional requirements clearly.
     - Provide tables in a neat and structured format.
-
+    Also, if necssary insert a fields from the 
     Output:
     The result must strictly follow the BRD format specified above, and be concise yet comprehensive. Avoid redundancy and unnecessary speculation.
     """
@@ -182,7 +182,7 @@ if sample_file:
     # Ensure there's content to compare
     if requirements and template_format and sample_text:
         # Calculate match scores
-        content_similarity = calculate_text_similarity(requirements, sample_text)
+        content_similarity = calculate_text_similarity(output_text, sample_text)
         format_similarity = calculate_structural_similarity(all_tables_as_text, sample_tables)
         
         # Final weighted score
